@@ -177,6 +177,7 @@ public class ChooseAreaFragment extends Fragment {
     private void queryFromServer(String address,final String type){
         showProgressDialog();
         HttpUtil.sendOkHttpRequest(address, new Callback() {
+
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText=response.body().string();
@@ -206,7 +207,6 @@ public class ChooseAreaFragment extends Fragment {
                 }
 
             }
-
             @Override
             public void onFailure(Call call, IOException e) {
                 getActivity().runOnUiThread(new Runnable() {
@@ -218,6 +218,8 @@ public class ChooseAreaFragment extends Fragment {
                 });
 
             }
+
+
 
 
         });
