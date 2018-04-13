@@ -11,11 +11,11 @@
     tools:context="com.example.a2.coolweather.WeatherActivity">
 
     <FrameLayout
-        android:id="@+id/weather_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorPrimary">
         <ScrollView
+            android:id="@+id/weather_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbars="none"

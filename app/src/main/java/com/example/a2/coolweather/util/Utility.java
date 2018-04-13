@@ -30,7 +30,7 @@ public class Utility {
                     JSONObject provinceObject =allProvinces.getJSONObject(i);
                     Province province=new Province();
                     province.setProvinceName(provinceObject.getString("name"));
-                    province.setProvinceCode(provinceObject.getInt("code"));
+                    province.setProvinceCode(provinceObject.getInt("id"));
                     province.save();
                 }
                 return true;
@@ -52,7 +52,7 @@ public class Utility {
                     JSONObject cityObject =allCities.getJSONObject(i);
                     City city=new City();
                     city.setCityName(cityObject.getString("name"));
-                    city.setCityCode(cityObject.getInt("code"));
+                    city.setCityCode(cityObject.getInt("id"));
                     city.save();
                 }
                 return true;
@@ -92,7 +92,7 @@ public class Utility {
         try{
             //解析
             JSONObject jsonObject=new JSONObject(response);
-            JSONArray jsonArray=jsonObject.getJSONArray("HeWeather");
+            JSONArray jsonArray=jsonObject.getJSONArray("HeWeather6");
             //传入jsonData到Gson(),转化为Weather实体类
             String weatherContent=jsonArray.getJSONObject(0).toString();
             return new Gson().fromJson(weatherContent,Weather.class);
