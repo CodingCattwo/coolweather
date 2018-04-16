@@ -2,6 +2,7 @@ package com.example.a2.coolweather;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ import org.litepal.crud.DataSupport;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
@@ -99,8 +101,8 @@ public class ChooseAreaFragment extends Fragment {
                         getActivity().finish();
                     }else if (getActivity() instanceof WeatherActivity) {
                         WeatherActivity activity = (WeatherActivity) getActivity();
-                       // activity.drawerLayout.closeDrawers();
-                       // activity.swipeRefresh.setRefreshing(true);
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
                         activity.requestWeather(weatherId);
                     }
 
@@ -148,15 +150,19 @@ public class ChooseAreaFragment extends Fragment {
 
         titleText.setText(selectedProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
-        //DataSupport.deleteAll(City.class);
+        //Cursor cursor=DataSupport.findBySQL("Select * from City where provinceid=?",String.valueOf(selectedProvince.getId()));
+       //没有取回任何数据
         cityList=DataSupport.where("provinceid = ?",String.valueOf(selectedProvince.getId())).find(City.class);
-        Log.d(DEBUG_TAG,"query citylist in db");
+
+        cityList=DataSupport.findAll(City.class);
+        //findAll才有数据
+        Log.d(DEBUG_TAG,"provinceid= "+String.valueOf(selectedProvince.getId()));
         /*
         问题关键所在！！！！
-        数据在handle类里存进去后，读取不出来；
+        数据在handle类里存进去后，cityList为空，循环读取并循环写入，死循环；
          */
+        Log.d(DEBUG_TAG,"citylist 长短为 "+cityList.size());
         if(cityList.size()>0){
-            Log.d(DEBUG_TAG,"citylist exists");
             dataList.clear();
             for(City city:cityList){
                 dataList.add(city.getCityName());
