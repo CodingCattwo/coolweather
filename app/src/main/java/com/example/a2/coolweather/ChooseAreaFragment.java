@@ -30,6 +30,7 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
+import android.util.Log;
 
 /**
  * Created by 猫2 on 2018/4/12.
@@ -37,6 +38,7 @@ import okhttp3.Response;
 
 public class ChooseAreaFragment extends Fragment {
 
+    public static final String DEBUG_TAG="FindHere";
     public static final int LEVEL_PROVINCE =0;
     public static final int LEVEL_CITY =1;
     public static final int LEVEL_COUNTY =2;
@@ -62,7 +64,7 @@ public class ChooseAreaFragment extends Fragment {
     //当前选中的级别
     private int currentLevel;
 
-    @SuppressWarnings("deprecation")
+    //@SuppressWarnings("deprecation")
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState){
         View view =inflater.inflate(R.layout.choose_area,container,false);
@@ -83,16 +85,25 @@ public class ChooseAreaFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(currentLevel==LEVEL_PROVINCE){
                     selectedProvince=provinceList.get(position);
+                    Log.d(DEBUG_TAG,"Click on Province");
                     queryCities();
                 }else if(currentLevel==LEVEL_CITY){
                     selectedCity=cityList.get(position);
                     queryCounties();
                 }else if(currentLevel==LEVEL_COUNTY){
                     String weatherId=countyList.get(position).getWeatherId();
-                    Intent intent=new Intent(getActivity(),WeatherActivity.class);
-                    intent.putExtra("weather_id",weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if (getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }else if (getActivity() instanceof WeatherActivity) {
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                       // activity.drawerLayout.closeDrawers();
+                       // activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
+
                 }
             }
         });
@@ -119,12 +130,14 @@ public class ChooseAreaFragment extends Fragment {
         provinceList= DataSupport.findAll(Province.class);
         if(provinceList.size()>0){
             dataList.clear();
+            Log.d(DEBUG_TAG,"province db exists");
             for(Province province:provinceList){
                 dataList.add(province.getProvinceName());
             }
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
             currentLevel=LEVEL_PROVINCE;
+
         }else{
             String address="http://guolin.tech/api/china";
             queryFromServer(address,"province");
@@ -135,9 +148,15 @@ public class ChooseAreaFragment extends Fragment {
 
         titleText.setText(selectedProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
-        cityList=DataSupport.where("provinceid=?",String.valueOf(selectedProvince.getId())).find(City.class);
-
+        //DataSupport.deleteAll(City.class);
+        cityList=DataSupport.where("provinceid = ?",String.valueOf(selectedProvince.getId())).find(City.class);
+        Log.d(DEBUG_TAG,"query citylist in db");
+        /*
+        问题关键所在！！！！
+        数据在handle类里存进去后，读取不出来；
+         */
         if(cityList.size()>0){
+            Log.d(DEBUG_TAG,"citylist exists");
             dataList.clear();
             for(City city:cityList){
                 dataList.add(city.getCityName());
@@ -146,8 +165,10 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel=LEVEL_CITY;
         }else{
+            Log.d(DEBUG_TAG,"city list not exist,and querying city");
            int provinceCode=selectedProvince.getProvinceCode();
             String address="http://guolin.tech/api/china/"+provinceCode;
+            Log.d(DEBUG_TAG,"province code is "+provinceCode);
             queryFromServer(address,"city");
         }
     }
@@ -156,7 +177,7 @@ public class ChooseAreaFragment extends Fragment {
 
         titleText.setText(selectedCity.getCityName());
         backButton.setVisibility(View.VISIBLE);
-        countyList=DataSupport.where("city=?",String.valueOf(selectedCity.getId())).find(County.class);
+        countyList=DataSupport.where("cityid = ?",String.valueOf(selectedCity.getId())).find(County.class);
 
         if(countyList.size()>0){
             dataList.clear();
@@ -184,20 +205,26 @@ public class ChooseAreaFragment extends Fragment {
                 boolean result=false;
                 if("province".equals(type)){
                     result= Utility.handleProvinceResponse(responseText);
+                    Log.d(DEBUG_TAG,"handle province");
                 }else if("city".equals(type)){
                     result=Utility.handleCityResponse(responseText,selectedProvince.getId());
+                    Log.d(DEBUG_TAG,"handle city,responseText is"+responseText);
+                    Log.d(DEBUG_TAG,"handle city,ProvinceId is"+selectedProvince.getId());
                 }else if("county".equals(type)){
                     result=Utility.handleCountyResponse(responseText,selectedCity.getId());
                 }
 
                 if(result){
+                    Log.d(DEBUG_TAG,"after handle,response_result not empty");
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             closeProgressDialog();
                             if("province".equals(type)){
+                                Log.d(DEBUG_TAG,"server and province");
                                 queryProvinces();
                             }else if("city".equals(type)){
+                                Log.d(DEBUG_TAG,"query_server for city and go to queryCity");
                                 queryCities();
                             }else if("county".equals(type)){
                                 queryCounties();
