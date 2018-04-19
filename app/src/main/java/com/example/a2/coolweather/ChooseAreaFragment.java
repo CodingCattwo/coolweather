@@ -26,13 +26,13 @@ import org.litepal.crud.DataSupport;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 import android.util.Log;
+
 
 /**
  * Created by 猫2 on 2018/4/12.
@@ -58,13 +58,16 @@ public class ChooseAreaFragment extends Fragment {
      */
 
     private List<Province> provinceList;
-    private List<City> cityList;
+    private List<City> cityList=new ArrayList<>();
+    private List<City> tempList;
     private List<County> countyList;
 
     private Province selectedProvince;
     private City selectedCity;
     //当前选中的级别
     private int currentLevel;
+
+    private int indexForHer;
 
     //@SuppressWarnings("deprecation")
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -150,18 +153,19 @@ public class ChooseAreaFragment extends Fragment {
 
         titleText.setText(selectedProvince.getProvinceName());
         backButton.setVisibility(View.VISIBLE);
-        //Cursor cursor=DataSupport.findBySQL("Select * from City where provinceid=?",String.valueOf(selectedProvince.getId()));
        //没有取回任何数据
+        //DataSupport.deleteAll(City.class);
         cityList=DataSupport.where("provinceid = ?",String.valueOf(selectedProvince.getId())).find(City.class);
-
-        cityList=DataSupport.findAll(City.class);
-        //findAll才有数据
-        Log.d(DEBUG_TAG,"provinceid= "+String.valueOf(selectedProvince.getId()));
-        /*
+         /*
         问题关键所在！！！！
-        数据在handle类里存进去后，cityList为空，循环读取并循环写入，死循环；
+       DataSupport不返回任何数据，provinceid关键字没错，返回了无法获取
+
+        2018/4/19 更新，db类里的getProvinceId写错了变量名导致Id没传到数据库里
          */
-        Log.d(DEBUG_TAG,"citylist 长短为 "+cityList.size());
+
+        //cityList=DataSupport.findAll(City.class);//加入全部数据
+        Log.d(DEBUG_TAG,"citylist 长度为 "+cityList.size());
+
         if(cityList.size()>0){
             dataList.clear();
             for(City city:cityList){
@@ -189,6 +193,10 @@ public class ChooseAreaFragment extends Fragment {
             dataList.clear();
             for(County county:countyList){
                 dataList.add(county.getCountyName());
+            }
+            if(dataList.contains("番禺")) {
+                indexForHer =dataList.indexOf("番禺");
+                dataList.set(indexForHer, "泽蘅家");
             }
             adapter.notifyDataSetChanged();
             listView.setSelection(0);
@@ -274,4 +282,15 @@ public class ChooseAreaFragment extends Fragment {
         }
     }
 
+    /*
+    private void simple(List<City> list,List<City> newList){
+
+        Set set = new HashSet();
+        for (City city:list) {
+            if(set.add(city)){
+                newList.add(city);
+            }
+        }
+    }
+    */
 }

@@ -42,7 +42,7 @@ public class City extends DataSupport {
     }
 
     public void setProvinceId(int id){
-        this.provinceId=provinceId;
+        this.provinceId=id;
     }
 
 }

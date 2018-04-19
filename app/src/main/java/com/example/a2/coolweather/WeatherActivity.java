@@ -199,6 +199,9 @@ public class WeatherActivity extends AppCompatActivity {
         String weatherInfo = weather.now.more.info;
 
         titleCity.setText(cityName);
+        if("番禺".equals(cityName)){
+            titleCity.setText("泽蘅家");
+        }
         titleUpdateTime.setText(updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);

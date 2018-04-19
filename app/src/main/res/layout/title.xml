@@ -23,12 +23,12 @@
         />
     <Button
         android:id="@+id/nav_button"
-        android:layout_width="30dp"
+        android:layout_width="35dp"
         android:layout_height="30dp"
         android:layout_marginLeft="10dp"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:text="△"
+        android:background="@drawable/home"
         />
 
 </RelativeLayout>
